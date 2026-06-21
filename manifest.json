@@ -1,0 +1,12 @@
+{
+  "name": "疊香筆記",
+  "short_name": "疊香筆記",
+  "description": "Fragrance Layering Journal",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F3EEE8",
+  "theme_color": "#4D586F",
+  "icons": [
+    { "src": "./icons.png", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

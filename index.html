@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfume Note · Fragrance Layering Journal</title>
+<link rel="icon" href="./icons.png" type="image/png">
+<link rel="apple-touch-icon" href="./icons.png">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D586F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Perfume Note">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sulphur+Point:wght@300;400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #F3EEE8;
+  --surface:    #FAF6F1;
+  --surface-low:#E4DDD4;
+  --ink:        #4D586F;
+  --ink-lt:     #8E97A8;
+  --ink-dis:    #B8C0CC;
+  --border:     rgba(77,88,111,.18);
+  --border-med: rgba(77,88,111,.32);
+  --warm:       #D39266;
+  --warm-lt:    #F0D9C0;
+  --gold:       #F6CE83;
+  --gold-lt:    #FBE8C0;
+  --rust:       #C06145;
+  --rust-lt:    #E8B09A;
+  --muted-blue: #DCE5EF;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans TC','Sulphur Point',sans-serif;
+  background: var(--bg); color: var(--ink); min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(77,88,111,.04) 28px),
+    repeating-linear-gradient(90deg,transparent,transparent 27px,rgba(77,88,111,.04) 28px);
+}
+
+/* Header */
+header {
+  position: relative; z-index: 1;
+  background: var(--surface); padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(77,88,111,.07);
+}
+.hd-left h1 { font-family:'Sulphur Point',sans-serif; font-size:1.22rem; font-weight:700; letter-spacing:.04em; }
+.hd-left p  { font-size:.7rem; color:var(--ink-lt); margin-top:1px; letter-spacing:.08em; }
+.hd-right   { display:flex; gap:8px; }
+.btn-sm {
+  padding:6px 14px; border-radius:6px; font-family:inherit; font-size:.75rem; font-weight:500;
+  cursor:pointer; transition:all .15s; border:1px solid var(--border-med); background:transparent; color:var(--ink-lt);
+}
+.btn-sm:hover { background:var(--muted-blue); color:var(--ink); border-color:var(--ink-lt); }
+.btn-sm.exp   { border-color:var(--ink); color:var(--ink); }
+.btn-sm.exp:hover { background:var(--ink); color:var(--surface); }
+
+/* Tabs */
+.tabs { position:relative; z-index:1; display:flex; padding:0 28px; background:var(--surface); border-bottom:1px solid var(--border); }
+.tab {
+  padding:10px 18px; border:none; background:transparent; font-family:inherit;
+  font-size:.82rem; font-weight:500; color:var(--ink-lt); cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s; letter-spacing:.01em;
+}
+.tab.active         { color:var(--ink); font-weight:700; border-bottom-color:var(--ink); }
+.tab.active.warm    { color:var(--rust); border-bottom-color:var(--rust); }
+.tab.active.gold    { color:var(--warm); border-bottom-color:var(--warm); }
+
+/* Content */
+.content { max-width:840px; margin:0 auto; padding:26px 18px; position:relative; z-index:1; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Combo grid */
+.combo-grid { display:grid; grid-template-columns:1fr 36px 1fr; gap:12px; align-items:start; margin-bottom:16px; }
+.connector  { display:flex; align-items:center; justify-content:center; padding-top:90px; font-size:1.4rem; color:var(--ink-dis); font-family:'Sulphur Point',sans-serif; user-select:none; }
+
+/* Slot */
+.slot { background:var(--surface); border-radius:10px; padding:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(77,88,111,.06); }
+.slot.ds { border-color:var(--rust-lt); }
+.slot-lbl { font-size:.64rem; font-weight:700; color:var(--ink-lt); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; font-family:'Sulphur Point',sans-serif; }
+.slot.ds .slot-lbl { color:var(--rust); }
+
+/* Search dropdown */
+.sw { position:relative; margin-bottom:10px; }
+.si {
+  width:100%; padding:7px 10px; border:1px solid var(--border-med); border-radius:6px;
+  background:var(--bg); color:var(--ink); font-family:inherit; font-size:.82rem; outline:none; transition:border-color .15s;
+}
+.si::placeholder { color:var(--ink-dis); }
+.si:focus   { border-color:var(--ink); }
+.si.hv      { border-color:var(--ink-lt); }
+.si.df:focus{ border-color:var(--rust); }
+.dd { position:absolute; inset:calc(100% + 3px) 0 auto; background:var(--surface); border:1px solid var(--border-med); border-radius:8px; box-shadow:0 8px 20px rgba(77,88,111,.13); max-height:190px; overflow-y:auto; z-index:200; display:none; }
+.dd.open { display:block; }
+.ddi { padding:7px 11px; cursor:pointer; transition:background .1s; border-bottom:1px solid var(--border); }
+.ddi:last-child { border-bottom:none; }
+.ddi:hover { background:var(--muted-blue); }
+.ddi .en { font-weight:500; font-size:.82rem; }
+.ddi .cn { font-size:.7rem; color:var(--ink-lt); }
+.dd-empty { padding:11px; color:var(--ink-dis); font-size:.78rem; text-align:center; }
+
+/* Selected name */
+.sel-name { text-align:center; min-height:38px; margin-bottom:9px; }
+.sel-name .en    { font-weight:600; font-size:.85rem; }
+.sel-name .cn    { font-size:.74rem; color:var(--ink-lt); margin-top:2px; }
+.sel-name .empty { color:var(--ink-dis); font-size:.78rem; }
+.slot-tones { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; margin-bottom:10px; min-height:20px; }
+
+/* Bottle */
+.bottle-area { display:flex; flex-direction:column; align-items:center; gap:7px; }
+.bwrap { width:100px; height:136px; display:flex; align-items:center; justify-content:center; }
+.bwrap img { width:100px; height:136px; object-fit:contain; }
+.sp { display:none; }
+.sb {
+  width:27px; height:27px; border-radius:5px; border:1px solid var(--border-med);
+  background:var(--bg); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  color:var(--ink-lt); transition:all .13s; padding:0;
+}
+.sb.active              { border-color:var(--ink); background:var(--muted-blue); color:var(--ink); }
+.sb.ds.active           { border-color:var(--rust); background:var(--rust-lt); color:var(--rust); }
+.sb:hover:not(.active)  { border-color:var(--ink-lt); background:var(--muted-blue); }
+
+/* Cards */
+.card { background:var(--surface); border-radius:10px; padding:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(77,88,111,.06); margin-bottom:12px; }
+.card.dc { border-color:var(--rust-lt); }
+.card-lbl { font-size:.64rem; font-weight:700; color:var(--ink-lt); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; font-family:'Sulphur Point',sans-serif; }
+.dc .card-lbl { color:var(--rust); }
+
+/* Rating */
+.hearts { display:flex; gap:9px; justify-content:center; }
+.heart  { font-size:1.75rem; cursor:pointer; opacity:.18; transition:transform .12s, opacity .12s; user-select:none; line-height:1; }
+.heart.on { opacity:1; }
+.heart:hover { transform:scale(1.15); }
+.rdesc { text-align:center; margin-top:9px; font-size:.78rem; color:var(--ink-lt); min-height:18px; font-weight:500; }
+
+/* Textarea */
+textarea {
+  width:100%; padding:9px 11px; border:1px solid var(--border-med); border-radius:6px;
+  background:var(--bg); color:var(--ink); font-family:inherit; font-size:.82rem;
+  resize:vertical; min-height:82px; outline:none; transition:border-color .15s;
+}
+textarea::placeholder { color:var(--ink-dis); }
+textarea:focus   { border-color:var(--ink); }
+textarea.df:focus{ border-color:var(--rust); }
+
+/* Save buttons */
+.btn-save { width:100%; padding:11px; border:none; border-radius:8px; font-family:inherit; font-size:.88rem; font-weight:600; cursor:pointer; transition:all .17s; letter-spacing:.02em; }
+.bp  { background:var(--ink); color:var(--surface); }
+.bp:hover:not(:disabled) { filter:brightness(1.15); transform:translateY(-1px); box-shadow:0 4px 10px rgba(77,88,111,.25); }
+.bd  { background:var(--rust); color:#fff; }
+.bd:hover:not(:disabled) { filter:brightness(.9); transform:translateY(-1px); }
+.bg  { background:var(--warm); color:#fff; }
+.bg:hover:not(:disabled) { filter:brightness(.9); transform:translateY(-1px); }
+.btn-save:disabled { background:var(--surface-low); color:var(--ink-dis); cursor:not-allowed; border:1px solid var(--border); }
+
+/* Landmine banner */
+.lm-banner { background:var(--rust-lt); border:1px solid rgba(192,97,69,.35); border-radius:8px; padding:11px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px; font-size:.8rem; color:var(--rust); font-weight:500; }
+
+/* Collection */
+.col-hdr { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.col-hdr h2 { font-size:.95rem; font-weight:700; flex:1; font-family:'Sulphur Point',sans-serif; letter-spacing:.03em; }
+.badge { background:var(--muted-blue); color:var(--ink); padding:3px 10px; border-radius:999px; font-size:.7rem; font-weight:600; }
+
+/* Filter bar */
+.filter-bar { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
+.filter-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.filter-lbl { font-size:.62rem; font-weight:700; color:var(--ink-dis); text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; font-family:'Sulphur Point',sans-serif; min-width:32px; }
+.fp {
+  padding:3px 10px; border-radius:999px; border:1px solid var(--border-med);
+  background:var(--bg); color:var(--ink-lt); font-family:inherit; font-size:.72rem;
+  font-weight:500; cursor:pointer; transition:all .13s; user-select:none;
+}
+.fp.on { border-color:var(--ink); background:var(--muted-blue); color:var(--ink); font-weight:600; }
+.fp.tone-木質.on     { background:#E8D8C5; border-color:#6A4A2A; color:#6A4A2A; }
+.fp.tone-果香.on     { background:#EDD5D0; border-color:#8A3A34; color:#8A3A34; }
+.fp.tone-花香.on     { background:#EDD6DE; border-color:#7A3A4A; color:#7A3A4A; }
+.fp.tone-柑橘香調.on { background:#EBE2C0; border-color:#6A5414; color:#6A5414; }
+
+.search-bar { position:relative; flex:1 1 200px; min-width:0; }
+.search-bar input {
+  width:100%; padding:7px 10px 7px 30px; border:1px solid var(--border-med); border-radius:6px;
+  background:var(--surface); color:var(--ink); font-family:inherit; font-size:.82rem; outline:none; transition:border-color .15s;
+}
+.search-bar input:focus { border-color:var(--ink); }
+.search-bar::before { content:''; position:absolute; left:9px; top:50%; transform:translateY(-50%); width:12px; height:12px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Ccircle cx='6.5' cy='6.5' r='4' stroke='%238E97A8' stroke-width='1.5'/%3E%3Cpath d='M10 10l3 3' stroke='%238E97A8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat; pointer-events:none; }
+
+/* Perfume grid */
+.pg { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:12px; }
+.pc {
+  background:var(--surface); border-radius:10px; padding:14px 12px;
+  border:1px solid var(--border); box-shadow:0 2px 8px rgba(77,88,111,.05); text-align:center; cursor:default; transition:transform .17s, box-shadow .17s;
+  position:relative;
+}
+.pc:hover { transform:translateY(-2px); box-shadow:0 6px 14px rgba(77,88,111,.1); }
+.pc:hover .pc-edit { opacity:1; }
+.pc-bot { display:flex; justify-content:center; margin-bottom:10px; }
+.pc-bot img { width:64px; height:86px; object-fit:contain; }
+.pc-en { font-weight:600; font-size:.79rem; margin-bottom:2px; }
+.pc-cn { font-size:.68rem; color:var(--ink-lt); margin-bottom:7px; }
+.pc-edit {
+  position:absolute; top:8px; right:8px; width:22px; height:22px;
+  border-radius:5px; border:1px solid var(--border-med); background:var(--surface);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  opacity:0; transition:opacity .15s; color:var(--ink-lt);
+}
+.pc-edit:hover { background:var(--muted-blue); color:var(--ink); border-color:var(--ink); }
+
+/* Bottle picker overlay */
+.bpop {
+  position:fixed; z-index:500; background:var(--surface); border:1px solid var(--border-med);
+  border-radius:10px; box-shadow:0 8px 24px rgba(77,88,111,.18); padding:10px;
+  display:grid; grid-template-columns:repeat(5,1fr); gap:6px; width:280px;
+}
+.bpop-item {
+  cursor:pointer; border-radius:6px; padding:5px 4px; border:1.5px solid var(--border);
+  background:var(--bg); display:flex; flex-direction:column; align-items:center; gap:2px; transition:all .12s;
+}
+.bpop-item:hover { border-color:var(--ink); background:var(--muted-blue); }
+.bpop-item.cur { border-color:var(--ink); background:var(--muted-blue); }
+.bpop-item img { width:36px; height:48px; object-fit:contain; }
+.bpop-item span { font-size:.58rem; color:var(--ink-lt); font-family:'Sulphur Point',sans-serif; }
+.tags  { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+.tt { padding:2px 7px; border-radius:999px; font-size:.63rem; font-weight:500; }
+.tone-木質     { background:#E8D8C5; color:#6A4A2A; }
+.tone-果香     { background:#EDD5D0; color:#8A3A34; }
+.tone-花香     { background:#EDD6DE; color:#7A3A4A; }
+.tone-柑橘香調 { background:#EBE2C0; color:#6A5414; }
+.ts { padding:2px 6px; border-radius:4px; font-size:.62rem; background:var(--muted-blue); color:var(--ink-lt); }
+
+/* Add perfume form */
+.add-form { background:var(--surface); border-radius:10px; padding:22px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(77,88,111,.06); }
+.form-row { margin-bottom:17px; }
+.form-row label { display:block; font-size:.64rem; font-weight:700; color:var(--ink-lt); text-transform:uppercase; letter-spacing:.08em; margin-bottom:7px; font-family:'Sulphur Point',sans-serif; }
+.form-input {
+  width:100%; padding:8px 11px; border:1px solid var(--border-med); border-radius:6px;
+  background:var(--bg); color:var(--ink); font-family:inherit; font-size:.86rem; outline:none; transition:border-color .15s;
+}
+.form-input:focus { border-color:var(--ink); }
+.form-input::placeholder { color:var(--ink-dis); }
+.form-2col { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+
+/* Checkbox groups */
+.check-group { display:flex; flex-wrap:wrap; gap:6px; }
+.check-pill {
+  padding:5px 12px; border-radius:999px; border:1px solid var(--border-med);
+  background:var(--bg); color:var(--ink-lt); font-family:inherit; font-size:.77rem;
+  font-weight:500; cursor:pointer; transition:all .14s; user-select:none;
+}
+.check-pill.on { border-color:var(--ink); background:var(--muted-blue); color:var(--ink); font-weight:600; }
+
+/* Bottle style picker (add form) */
+.bottle-picker { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.bpick {
+  cursor:pointer; border-radius:8px; padding:8px 6px;
+  border:1.5px solid var(--border-med); background:var(--bg); transition:all .14s;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.bpick.on { border-color:var(--ink); background:var(--muted-blue); }
+.bpick img { width:52px; height:70px; object-fit:contain; }
+.bpick span { font-size:.6rem; color:var(--ink-lt); font-family:'Sulphur Point',sans-serif; }
+.bpick.on span { color:var(--ink); font-weight:700; }
+
+.add-preview { display:flex; justify-content:center; margin-bottom:16px; }
+.add-preview svg { width:100px; height:136px; }
+
+/* State */
+.state-box { text-align:center; padding:50px 20px; color:var(--ink-lt); }
+.spinner { width:26px; height:26px; border:2px solid var(--border-med); border-top-color:var(--ink); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 10px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Toast */
+.toast { position:fixed; bottom:18px; right:18px; padding:9px 16px; border-radius:7px; font-size:.82rem; font-weight:500; box-shadow:0 8px 20px rgba(77,88,111,.18); transform:translateY(60px); opacity:0; transition:all .25s; z-index:9999; pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.ok   { background:var(--ink); color:var(--surface); }
+.toast.err  { background:var(--rust); color:#fff; }
+
+/* Combo overview */
+.combos-section { margin-bottom:24px; }
+.combos-hdr {
+  display:flex; align-items:center; gap:10px; margin-bottom:12px;
+  cursor:pointer; user-select:none;
+}
+.combos-hdr h2 { font-size:.95rem; font-weight:700; font-family:'Sulphur Point',sans-serif; letter-spacing:.03em; }
+.combos-hdr .badge { flex-shrink:0; }
+.combos-chevron { margin-left:auto; color:var(--ink-dis); transition:transform .2s; flex-shrink:0; }
+.combos-hdr.collapsed .combos-chevron { transform:rotate(-90deg); }
+.combos-body { overflow:hidden; transition:max-height .25s ease; }
+.combos-body.collapsed { max-height:0 !important; }
+.cc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+.cc {
+  background:var(--surface); border-radius:10px; border:1px solid var(--border);
+  box-shadow:0 2px 8px rgba(77,88,111,.05); padding:14px 16px;
+}
+.cc.bad { border-color:var(--rust-lt); }
+.cc-pair { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.cc-p { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0; }
+.cc-p img { width:46px; height:62px; object-fit:contain; }
+.cc-pname { font-size:.68rem; font-weight:600; text-align:center; line-height:1.3; word-break:break-word; }
+.cc-pcn   { font-size:.6rem; color:var(--ink-lt); text-align:center; line-height:1.3; }
+.cc-x { font-size:1.2rem; color:var(--ink-dis); flex-shrink:0; font-family:'Sulphur Point',sans-serif; }
+.cc-meta { display:flex; flex-direction:column; gap:4px; }
+.cc-stars { font-size:.9rem; letter-spacing:1px; }
+.cc-notes { font-size:.72rem; color:var(--ink-lt); line-height:1.5; }
+.cc-date  { font-size:.62rem; color:var(--ink-dis); }
+
+/* Custom tone input */
+.tone-custom-input {
+  padding:5px 11px; border-radius:999px; border:1.5px dashed var(--border-med);
+  background:transparent; color:var(--ink); font-family:inherit; font-size:.77rem;
+  font-weight:500; outline:none; width:66px; transition:width .18s, border-color .14s;
+}
+.tone-custom-input:focus { border-color:var(--ink); width:100px; }
+.tone-custom-input::placeholder { color:var(--ink-dis); }
+
+/* Mobile */
+@media (max-width:620px) {
+  header { padding:11px 14px; }
+  .hd-left h1 { font-size:1rem; }
+  .tabs { padding:0 10px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { padding:10px 11px; font-size:.76rem; white-space:nowrap; }
+  .content { padding:14px 12px; }
+  .combo-grid { grid-template-columns:1fr; gap:10px; }
+  .connector { padding-top:0; font-size:1rem; }
+  .form-2col { grid-template-columns:1fr; gap:0; }
+  .bottle-picker { grid-template-columns:repeat(5,1fr); gap:5px; }
+  .bpick img { width:40px; height:54px; }
+  .pg { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; }
+  .col-hdr { gap:8px; }
+  .search-bar { width:100%; flex:none; }
+  .bpop { width:calc(100vw - 24px); }
+  .toast { left:12px; right:12px; bottom:14px; text-align:center; }
+}
+/* Always show edit button on touch devices */
+@media (hover:none) {
+  .pc-edit { opacity:0.7; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-left"><h1>Perfume Notes</h1><p>Fragrance Layering Journal</p></div>
+  <div class="hd-right">
+    <button class="btn-sm exp" onclick="exportNotes()">匯出筆記</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" id="tab-record"     onclick="switchTab('record')">記錄疊香</button>
+  <button class="tab"        id="tab-landmine"   onclick="switchTab('landmine')">地雷區</button>
+  <button class="tab"        id="tab-combos"     onclick="switchTab('combos')">組合總覽</button>
+  <button class="tab"        id="tab-collection" onclick="switchTab('collection')">香水庫</button>
+  <button class="tab"        id="tab-add"        onclick="switchTab('add')">+ 新增香水</button>
+</div>
+
+<div class="content">
+
+<!-- ══ Tab: 記錄疊香 ══════════════════════════════════ -->
+<div class="tab-panel active" id="panel-record">
+  <div class="combo-grid">
+    <div class="slot" id="rslot1">
+      <div class="slot-lbl">香水 1 · Perfume One</div>
+      <div class="sw"><input class="si" id="rs1" type="text" placeholder="搜尋…" oninput="flt('r',1)" onfocus="odrop('r',1)" autocomplete="off"><div class="dd" id="rd1"></div></div>
+      <div class="sel-name" id="rn1"><span class="empty">尚未選擇</span></div>
+      <div class="slot-tones" id="rt1"></div>
+      <div class="bottle-area">
+        <div class="bwrap" id="rb1"></div>
+        <div class="sp" id="rsp1">
+          <button class="sb active" onclick="setSt('r',1,0)" title="經典"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="1.5" y="4" width="10" height="12" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb"        onclick="setSt('r',1,1)" title="圓弧"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><circle cx="6.5" cy="11.5" r="5" fill="currentColor"/></svg></button>
+          <button class="sb"        onclick="setSt('r',1,2)" title="高瓶"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="0.5" width="3" height="2.5" rx="1" fill="currentColor" opacity=".5"/><rect x="3.5" y="3.5" width="6" height="13" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb"        onclick="setSt('r',1,3)" title="寬身"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="0.5" width="6" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="0.5" y="4" width="12" height="8" rx="2.5" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="connector">×</div>
+    <div class="slot" id="rslot2">
+      <div class="slot-lbl">香水 2 · Perfume Two</div>
+      <div class="sw"><input class="si" id="rs2" type="text" placeholder="搜尋…" oninput="flt('r',2)" onfocus="odrop('r',2)" autocomplete="off"><div class="dd" id="rd2"></div></div>
+      <div class="sel-name" id="rn2"><span class="empty">尚未選擇</span></div>
+      <div class="slot-tones" id="rt2"></div>
+      <div class="bottle-area">
+        <div class="bwrap" id="rb2"></div>
+        <div class="sp" id="rsp2">
+          <button class="sb active" onclick="setSt('r',2,0)" title="經典"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="1.5" y="4" width="10" height="12" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb"        onclick="setSt('r',2,1)" title="圓弧"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><circle cx="6.5" cy="11.5" r="5" fill="currentColor"/></svg></button>
+          <button class="sb"        onclick="setSt('r',2,2)" title="高瓶"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="0.5" width="3" height="2.5" rx="1" fill="currentColor" opacity=".5"/><rect x="3.5" y="3.5" width="6" height="13" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb"        onclick="setSt('r',2,3)" title="寬身"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="0.5" width="6" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="0.5" y="4" width="12" height="8" rx="2.5" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">適合程度 · Suitability</div>
+    <div class="hearts" id="rh">
+      <span class="heart" data-v="1" onclick="setR('r',1)">♥</span>
+      <span class="heart" data-v="2" onclick="setR('r',2)">♥</span>
+      <span class="heart" data-v="3" onclick="setR('r',3)">♥</span>
+      <span class="heart" data-v="4" onclick="setR('r',4)">♥</span>
+      <span class="heart" data-v="5" onclick="setR('r',5)">♥</span>
+    </div>
+    <div class="rdesc" id="rd">點擊來評分</div>
+  </div>
+  <div class="card"><div class="card-lbl">筆記 · Notes</div><textarea id="rnotes" placeholder="氣味印象、適合場合、季節…"></textarea></div>
+  <button class="btn-save bp" id="rsave" onclick="saveEntry('r')" disabled>串接到 Notion + 儲存筆記</button>
+</div>
+
+<!-- ══ Tab: 地雷區 ════════════════════════════════════ -->
+<div class="tab-panel" id="panel-landmine">
+  <div class="lm-banner">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7.5" cy="7.5" r="6.5" fill="#C06145"/><path d="M7.5 3.5v5M7.5 10.5v1" stroke="#FAF6F1" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <span>記錄踩雷組合，讓以後的自己別再重蹈覆轍</span>
+  </div>
+  <div class="combo-grid">
+    <div class="slot ds" id="lslot1">
+      <div class="slot-lbl">香水 1 · Perfume One</div>
+      <div class="sw"><input class="si df" id="ls1" type="text" placeholder="搜尋…" oninput="flt('l',1)" onfocus="odrop('l',1)" autocomplete="off"><div class="dd" id="ld1"></div></div>
+      <div class="sel-name" id="ln1"><span class="empty">尚未選擇</span></div>
+      <div class="slot-tones" id="lt1"></div>
+      <div class="bottle-area">
+        <div class="bwrap" id="lb1"></div>
+        <div class="sp" id="lsp1">
+          <button class="sb ds active" onclick="setSt('l',1,0)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="1.5" y="4" width="10" height="12" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb ds"        onclick="setSt('l',1,1)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><circle cx="6.5" cy="11.5" r="5" fill="currentColor"/></svg></button>
+          <button class="sb ds"        onclick="setSt('l',1,2)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="5" y="0.5" width="3" height="2.5" rx="1" fill="currentColor" opacity=".5"/><rect x="3.5" y="3.5" width="6" height="13" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb ds"        onclick="setSt('l',1,3)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="3.5" y="0.5" width="6" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="0.5" y="4" width="12" height="8" rx="2.5" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="connector">×</div>
+    <div class="slot ds" id="lslot2">
+      <div class="slot-lbl">香水 2 · Perfume Two</div>
+      <div class="sw"><input class="si df" id="ls2" type="text" placeholder="搜尋…" oninput="flt('l',2)" onfocus="odrop('l',2)" autocomplete="off"><div class="dd" id="ld2"></div></div>
+      <div class="sel-name" id="ln2"><span class="empty">尚未選擇</span></div>
+      <div class="slot-tones" id="lt2"></div>
+      <div class="bottle-area">
+        <div class="bwrap" id="lb2"></div>
+        <div class="sp" id="lsp2">
+          <button class="sb ds active" onclick="setSt('l',2,0)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="1.5" y="4" width="10" height="12" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb ds"        onclick="setSt('l',2,1)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="4.5" y="0.5" width="4" height="3" rx="1" fill="currentColor" opacity=".5"/><circle cx="6.5" cy="11.5" r="5" fill="currentColor"/></svg></button>
+          <button class="sb ds"        onclick="setSt('l',2,2)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="5" y="0.5" width="3" height="2.5" rx="1" fill="currentColor" opacity=".5"/><rect x="3.5" y="3.5" width="6" height="13" rx="2" fill="currentColor"/></svg></button>
+          <button class="sb ds"        onclick="setSt('l',2,3)"><svg width="13" height="17" viewBox="0 0 13 17" fill="none"><rect x="3.5" y="0.5" width="6" height="3" rx="1" fill="currentColor" opacity=".5"/><rect x="0.5" y="4" width="12" height="8" rx="2.5" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card dc">
+    <div class="card-lbl">雷區等級 · How Bad Was It?</div>
+    <div class="hearts" id="lh">
+      <span class="heart" data-v="1" onclick="setR('l',1)" style="color:var(--rust)">✕</span>
+      <span class="heart" data-v="2" onclick="setR('l',2)" style="color:var(--rust)">✕</span>
+      <span class="heart" data-v="3" onclick="setR('l',3)" style="color:var(--rust)">✕</span>
+      <span class="heart" data-v="4" onclick="setR('l',4)" style="color:var(--rust)">✕</span>
+      <span class="heart" data-v="5" onclick="setR('l',5)" style="color:var(--rust)">✕</span>
+    </div>
+    <div class="rdesc" id="ld">點擊來標記雷區等級</div>
+  </div>
+  <div class="card dc"><div class="card-lbl">踩雷紀錄 · What Went Wrong?</div><textarea class="df" id="lnotes" placeholder="頭香衝突、太嗆、太甜…"></textarea></div>
+  <button class="btn-save bd" id="lsave" onclick="saveEntry('l')" disabled>標記避開組合 + 儲存筆記</button>
+</div>
+
+<!-- ══ Tab: 組合總覽 ══════════════════════════════════ -->
+<div class="tab-panel" id="panel-combos">
+  <div id="combosContent"><div class="state-box"><div class="spinner"></div><p>載入中…</p></div></div>
+</div>
+
+<!-- ══ Tab: 香水庫 ════════════════════════════════════ -->
+<div class="tab-panel" id="panel-collection">
+  <div class="col-hdr">
+    <h2>我的香水庫</h2>
+    <div class="search-bar"><input type="text" id="colSearch" placeholder="搜尋香水…" oninput="renderCollection()"></div>
+    <span class="badge" id="countBadge">…</span>
+  </div>
+  <div class="filter-bar" id="filterBar" style="display:none">
+    <div class="filter-row"><span class="filter-lbl">調性</span><div id="toneFilters" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+    <div class="filter-row"><span class="filter-lbl">容量</span><div id="sizeFilters" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+  </div>
+  <div id="collectionGrid"><div class="state-box"><div class="spinner"></div><p>正在從 Notion 載入…</p></div></div>
+</div>
+
+<!-- ══ Tab: 新增香水 ══════════════════════════════════ -->
+<div class="tab-panel" id="panel-add">
+  <div class="add-form">
+    <div class="form-2col">
+      <div class="form-row">
+        <label>英文名稱 · English Name</label>
+        <input class="form-input" id="addEn" type="text" placeholder="e.g. Rose et Reines">
+      </div>
+      <div class="form-row">
+        <label>中文名稱</label>
+        <input class="form-input" id="addCn" type="text" placeholder="e.g. 玫瑰皇后">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>調性 · Fragrance Family</label>
+      <div class="check-group" id="addTones">
+        <span class="check-pill" data-v="木質"    onclick="togglePill(this)">木質</span>
+        <span class="check-pill" data-v="果香"    onclick="togglePill(this)">果香</span>
+        <span class="check-pill" data-v="花香"    onclick="togglePill(this)">花香</span>
+        <span class="check-pill" data-v="柑橘香調" onclick="togglePill(this)">柑橘香調</span>
+        <input id="addToneInput" class="tone-custom-input" type="text" placeholder="+ 自訂" maxlength="12">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>容量 · Size</label>
+      <div class="check-group" id="addSizes">
+        <span class="check-pill" data-v="1.5ml"   onclick="togglePill(this)">1.5ml</span>
+        <span class="check-pill" data-v="1.5ml*2" onclick="togglePill(this)">1.5ml×2</span>
+        <span class="check-pill" data-v="9ml"     onclick="togglePill(this)">9ml</span>
+        <span class="check-pill" data-v="9ml*2"   onclick="togglePill(this)">9ml×2</span>
+        <span class="check-pill" data-v="9ml*4"   onclick="togglePill(this)">9ml×4</span>
+        <span class="check-pill" data-v="10 ml"   onclick="togglePill(this)">10ml</span>
+        <span class="check-pill" data-v="30ml"    onclick="togglePill(this)">30ml</span>
+        <span class="check-pill" data-v="50ml"    onclick="togglePill(this)">50ml</span>
+        <span class="check-pill" data-v="100ml"   onclick="togglePill(this)">100ml</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>插畫樣式 · Bottle Style <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-dis);font-family:'Noto Sans TC',sans-serif;font-size:.78rem">（插畫之後補，先選瓶型）</span></label>
+      <div class="bottle-picker" id="bottlePicker"></div>
+    </div>
+
+    <div class="add-preview" id="addPreview"></div>
+
+    <button class="btn-save bg" id="addSave" onclick="addPerfume()">新增到 Notion</button>
+  </div>
+</div>
+
+</div><!-- /content -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── Config ──────────────────────────────────── */
+const WORKER_URL = (()=>{
+  return 'https://perfume-09.jouyu-chen-jc.workers.dev';
+})();
+
+const BOTTLE_COUNT = 16;
+const NOTES_KEY = 'pf_notes';
+
+const RATING_R = ['','不太搭','還可以','搭得不錯','非常喜歡','完美組合！'];
+const RATING_L = ['','有點違和','不太對味','明顯衝突','超難聞','絕對避開'];
+
+function bottleImg(n, w, h){
+  const num = String(n||1).padStart(2,'0');
+  return `<img src="./bottles/perfume-${num}.png" width="${w}" height="${h}">`;
+}
+
+/* ─── Tabs ───────────────────────────────────── */
+function switchTab(t){
+  ['record','landmine','combos','collection','add'].forEach(id=>{
+    const tab=document.getElementById(`tab-${id}`);
+    tab.classList.toggle('active',id===t);
+    tab.classList.toggle('warm',id===t&&t==='landmine');
+    tab.classList.toggle('gold',id===t&&t==='add');
+    document.getElementById(`panel-${id}`).classList.toggle('active',id===t);
+  });
+  if(t==='collection') renderCollection();
+  if(t==='add') renderBottlePreviews();
+  if(t==='combos') renderCombos();
+}
+
+/* ─── State ──────────────────────────────────── */
+let allPerfumes=[];
+const S={
+  r:{sel:{1:null,2:null},style:{1:0,2:0},rating:0},
+  l:{sel:{1:null,2:null},style:{1:0,2:0},rating:0},
+};
+let addBottleStyle=1;
+
+/* ─── Load ───────────────────────────────────── */
+async function loadPerfumes(){
+  if(!WORKER_URL) return;
+  try{
+    const r=await fetch(`${WORKER_URL}/api/perfumes`);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d=await r.json();
+    allPerfumes=d.perfumes||[];
+    ['r','l'].forEach(m=>{renderDrop(m,1,allPerfumes);renderDrop(m,2,allPerfumes);});
+    buildFilters();
+    renderCollection();
+  }catch(e){toast(`載入失敗：${e.message}`,'err');}
+}
+
+/* ─── Dropdowns ──────────────────────────────── */
+function flt(m,s){
+  const q=document.getElementById(`${m}s${s}`).value.toLowerCase();
+  renderDrop(m,s,allPerfumes.filter(p=>p.name.toLowerCase().includes(q)||p.nameCN.toLowerCase().includes(q)));
+  odrop(m,s);
+}
+function renderDrop(m,s,list){
+  document.getElementById(`${m}d${s}`).innerHTML=list.length
+    ?list.map(p=>`<div class="ddi" onclick="pick('${m}',${s},'${p.id}')"><div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div></div>`).join('')
+    :`<div class="dd-empty">找不到香水</div>`;
+}
+function odrop(m,s){document.getElementById(`${m}d${s}`).classList.add('open');}
+function cdrop(m,s){document.getElementById(`${m}d${s}`).classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.sw')){['r','l'].forEach(m=>{cdrop(m,1);cdrop(m,2);});}});
+
+function pick(m,s,id){
+  const p=allPerfumes.find(x=>x.id===id); if(!p)return;
+  S[m].sel[s]=p;
+  document.getElementById(`${m}s${s}`).value=p.name||p.nameCN;
+  document.getElementById(`${m}s${s}`).classList.add('hv');
+  cdrop(m,s);
+  document.getElementById(`${m}n${s}`).innerHTML=`<div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div>`;
+  document.getElementById(`${m}t${s}`).innerHTML=(p.tone||[]).map(t=>`<span class="tt tone-${t}">${t}</span>`).join('');
+  renderBottle(m,s);
+  updSave(m);
+}
+
+/* ─── Bottles ────────────────────────────────── */
+function renderBottle(m,s){
+  const p=S[m].sel[s]; if(!p) return;
+  document.getElementById(`${m}b${s}`).innerHTML=bottleImg(p.bottle||1,100,136);
+}
+
+/* ─── Rating ─────────────────────────────────── */
+function setR(m,v){
+  S[m].rating=v;
+  document.querySelectorAll(`#${m}h .heart`).forEach(h=>h.classList.toggle('on',+h.dataset.v<=v));
+  document.getElementById(`${m}d`).textContent=(m==='l'?RATING_L:RATING_R)[v]||'';
+  updSave(m);
+}
+function updSave(m){document.getElementById(`${m}save`).disabled=!(S[m].sel[1]&&S[m].sel[2]&&S[m].rating&&WORKER_URL);}
+
+/* ─── Save ───────────────────────────────────── */
+async function saveEntry(m){
+  if(!WORKER_URL){toast('Worker URL 未設定','err');return;}
+  const{sel,rating}=S[m];
+  const btn=document.getElementById(`${m}save`), orig=btn.textContent;
+  btn.disabled=true; btn.textContent='儲存中…';
+  const prop=m==='l'?'避開組合':'揉香組合';
+  try{
+    const r=await fetch(`${WORKER_URL}/api/link`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({perfume1Id:sel[1].id, perfume2Id:sel[2].id, property:prop}),
+    });
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    saveLocalNote({
+      type:m==='l'?'地雷':'推薦',
+      p1:{id:sel[1].id,name:sel[1].name,nameCN:sel[1].nameCN},
+      p2:{id:sel[2].id,name:sel[2].name,nameCN:sel[2].nameCN},
+      rating, notes:document.getElementById(`${m}notes`).value.trim(),
+      savedAt:new Date().toISOString(),
+    });
+    toast(d.already_linked?'筆記已儲存（Notion 已存在）':(m==='l'?'避開組合已串接':'已串接到 Notion'),'ok');
+    resetForm(m);
+  }catch(e){toast(`失敗：${e.message}`,'err');}
+  finally{btn.textContent=orig; updSave(m);}
+}
+
+function resetForm(m){
+  S[m].sel={1:null,2:null}; S[m].rating=0;
+  [1,2].forEach(s=>{
+    document.getElementById(`${m}s${s}`).value='';
+    document.getElementById(`${m}s${s}`).classList.remove('hv');
+    document.getElementById(`${m}n${s}`).innerHTML='<span class="empty">尚未選擇</span>';
+    document.getElementById(`${m}t${s}`).innerHTML='';
+    document.getElementById(`${m}b${s}`).innerHTML='';
+  });
+  document.querySelectorAll(`#${m}h .heart`).forEach(h=>h.classList.remove('on'));
+  document.getElementById(`${m}d`).textContent=m==='l'?'點擊來標記雷區等級':'點擊來評分';
+  document.getElementById(`${m}notes`).value=''; updSave(m);
+}
+
+/* ─── Local notes ────────────────────────────── */
+function getLocalNotes(){try{return JSON.parse(localStorage.getItem(NOTES_KEY)||'[]');}catch{return[];}}
+function saveLocalNote(n){
+  const notes=getLocalNotes();
+  const idx=notes.findIndex(x=>(x.p1.id===n.p1.id&&x.p2.id===n.p2.id)||(x.p1.id===n.p2.id&&x.p2.id===n.p1.id));
+  if(idx>=0) notes[idx]=n; else notes.push(n);
+  localStorage.setItem(NOTES_KEY,JSON.stringify(notes));
+}
+
+/* ─── Export ─────────────────────────────────── */
+function exportNotes(){
+  const notes=getLocalNotes(); if(!notes.length){toast('沒有筆記可匯出','err');return;}
+  const fmt=d=>new Date(d).toLocaleDateString('zh-TW');
+  const stars=(ch,n)=>ch.repeat(n)+'_'.repeat(5-n);
+  let out=`Perfume Note  匯出於 ${fmt(new Date())}\n${'─'.repeat(38)}\n\n`;
+  const rec=notes.filter(n=>n.type==='推薦'), min=notes.filter(n=>n.type==='地雷');
+  if(rec.length){
+    out+=`[推薦]\n${'─'.repeat(28)}\n\n`;
+    rec.forEach(n=>{
+      out+=`${stars('♥',n.rating)}  (${n.rating}/5)\n${n.p1.name||n.p1.nameCN} x ${n.p2.name||n.p2.nameCN}\n`;
+      const cn=[n.p1.nameCN,n.p2.nameCN].filter(Boolean).join(' x ');
+      if(cn) out+=`${cn}\n`;
+      if(n.notes) out+=`${n.notes}\n`;
+      out+=`${fmt(n.savedAt)}\n\n`;
+    });
+  }
+  if(min.length){
+    out+=`[地雷]\n${'─'.repeat(28)}\n\n`;
+    min.forEach(n=>{
+      out+=`${stars('x',n.rating)}  (${n.rating}/5)\n${n.p1.name||n.p1.nameCN} x ${n.p2.name||n.p2.nameCN}\n`;
+      const cn=[n.p1.nameCN,n.p2.nameCN].filter(Boolean).join(' x ');
+      if(cn) out+=`${cn}\n`;
+      if(n.notes) out+=`${n.notes}\n`;
+      out+=`${fmt(n.savedAt)}\n\n`;
+    });
+  }
+  const a=Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(new Blob([out],{type:'text/plain;charset=utf-8'})),
+    download:`Perfume Note_${new Date().toISOString().slice(0,10)}.txt`,
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('筆記已匯出','ok');
+}
+
+/* ─── Combos overview ────────────────────────── */
+function renderCombos(){
+  const el=document.getElementById('combosContent');
+  if(!allPerfumes.length){el.innerHTML='<div class="state-box"><p>尚未載入香水資料</p></div>';return;}
+
+  const notes=getLocalNotes();
+  const byId=Object.fromEntries(allPerfumes.map(p=>[p.id,p]));
+
+  function buildPairs(field){
+    const seen=new Set(); const pairs=[];
+    allPerfumes.forEach(p=>{
+      (p[field]||[]).forEach(otherId=>{
+        const key=[p.id,otherId].sort().join('|');
+        if(seen.has(key)||!byId[otherId]) return;
+        seen.add(key);
+        pairs.push({a:p, b:byId[otherId]});
+      });
+    });
+    return pairs;
+  }
+
+  function noteFor(a,b){
+    return notes.find(n=>(n.p1.id===a.id&&n.p2.id===b.id)||(n.p1.id===b.id&&n.p2.id===a.id));
+  }
+
+  function pCard(p){
+    return `<div class="cc-p">
+      ${bottleImg(p.bottle||1,46,62)}
+      <div class="cc-pname">${p.name||'—'}</div>
+      ${p.nameCN?`<div class="cc-pcn">${p.nameCN}</div>`:''}
+    </div>`;
+  }
+
+  function renderPairs(pairs, bad){
+    if(!pairs.length) return `<div class="state-box" style="padding:24px"><p>還沒有記錄</p></div>`;
+    return `<div class="cc-grid">${pairs.map(({a,b})=>{
+      const n=noteFor(a,b);
+      const stars=n ? (bad?'✕':'♥').repeat(n.rating)+'<span style="opacity:.18">'+(bad?'✕':'♥').repeat(5-n.rating)+'</span>' : '';
+      return `<div class="cc${bad?' bad':''}">
+        <div class="cc-pair">${pCard(a)}<div class="cc-x">×</div>${pCard(b)}</div>
+        ${n?`<div class="cc-meta">
+          ${stars?`<div class="cc-stars" style="color:${bad?'var(--rust)':'var(--warm)'}">${stars}</div>`:''}
+          ${n.notes?`<div class="cc-notes">${n.notes}</div>`:''}
+          <div class="cc-date">${new Date(n.savedAt).toLocaleDateString('zh-TW')}</div>
+        </div>`:''}
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  const good=buildPairs('combos'), bad=buildPairs('avoids');
+  const chevron=`<svg class="combos-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  el.innerHTML=`
+    <div class="combos-section">
+      <div class="combos-hdr" onclick="toggleCombosSection(this)">
+        <h2>推薦組合</h2><span class="badge">${good.length} 組</span>${chevron}
+      </div>
+      <div class="combos-body" style="max-height:9999px">${renderPairs(good,false)}</div>
+    </div>
+    <div class="combos-section">
+      <div class="combos-hdr" onclick="toggleCombosSection(this)">
+        <h2>避開組合</h2><span class="badge" style="background:var(--rust-lt);color:var(--rust)">${bad.length} 組</span>${chevron}
+      </div>
+      <div class="combos-body" style="max-height:9999px">${renderPairs(bad,true)}</div>
+    </div>`;
+}
+
+function toggleCombosSection(hdr){
+  hdr.classList.toggle('collapsed');
+  const body=hdr.nextElementSibling;
+  body.classList.toggle('collapsed');
+  if(!body.classList.contains('collapsed')) body.style.maxHeight=body.scrollHeight+'px';
+}
+
+/* ─── Collection filters ─────────────────────── */
+const activeFilters={tone:new Set(), size:new Set()};
+
+function buildFilters(){
+  const tones=[...new Set(allPerfumes.flatMap(p=>p.tone||[]))].sort();
+  const SIZE_ORDER=['1.5ml','1.5ml*2','9ml','9ml*2','9ml*4','10 ml','30ml','50ml','100ml'];
+  const sizes=[...new Set(allPerfumes.flatMap(p=>p.size||[]))]
+    .sort((a,b)=>{ const ia=SIZE_ORDER.indexOf(a),ib=SIZE_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
+
+  const TONES=['木質','果香','花香','柑橘香調'];
+  document.getElementById('toneFilters').innerHTML=tones.map(t=>
+    `<span class="fp ${TONES.includes(t)?'tone-'+t:''}" onclick="toggleFilter('tone','${t}',this)">${t}</span>`
+  ).join('');
+  document.getElementById('sizeFilters').innerHTML=sizes.map(s=>
+    `<span class="fp" onclick="toggleFilter('size','${s}',this)">${s}</span>`
+  ).join('');
+  document.getElementById('filterBar').style.display = tones.length||sizes.length ? '' : 'none';
+}
+
+function toggleFilter(cat,val,el){
+  activeFilters[cat].has(val) ? activeFilters[cat].delete(val) : activeFilters[cat].add(val);
+  el.classList.toggle('on', activeFilters[cat].has(val));
+  renderCollection();
+}
+
+/* ─── Collection ─────────────────────────────── */
+function renderCollection(){
+  const el=document.getElementById('collectionGrid');
+  if(!WORKER_URL){el.innerHTML='<div class="state-box"><p>Worker URL 未設定</p></div>';document.getElementById('countBadge').textContent='—';return;}
+  if(!allPerfumes.length){loadPerfumes();return;}
+  const q=(document.getElementById('colSearch')?.value||'').toLowerCase();
+  const ft=activeFilters.tone, fs=activeFilters.size;
+  const items=allPerfumes.filter(p=>{
+    if(!(p.name||p.nameCN)) return false;
+    if(q && !p.name.toLowerCase().includes(q) && !p.nameCN.toLowerCase().includes(q)) return false;
+    if(ft.size && !(p.tone||[]).some(t=>ft.has(t))) return false;
+    if(fs.size && !(p.size||[]).some(s=>fs.has(s))) return false;
+    return true;
+  });
+  document.getElementById('countBadge').textContent=`${items.length} 款`;
+  if(!items.length){el.innerHTML='<div class="state-box"><p>找不到符合的香水</p></div>';return;}
+  el.innerHTML=`<div class="pg">${items.map(p=>{
+    const img=bottleImg(p.bottle||1,64,86);
+    const tones=(p.tone||[]).map(t=>`<span class="tt tone-${t}">${t}</span>`).join('');
+    const sizes=(p.size||[]).map(s=>`<span class="ts">${s}</span>`).join('');
+    const editBtn=`<div class="pc-edit" onclick="openBottlePicker(event,'${p.id}')"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7.5 1.5l2 2L3 10H1V8L7.5 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></div>`;
+    return `<div class="pc" id="pc-${p.id}">${editBtn}<div class="pc-bot">${img}</div><div class="pc-en">${p.name||'—'}</div><div class="pc-cn">${p.nameCN||''}</div>${(tones||sizes)?`<div class="tags">${tones}${sizes}</div>`:''}</div>`;
+  }).join('')}</div>`;
+}
+
+/* ─── Bottle picker (collection) ────────────── */
+let _bpop=null;
+
+function openBottlePicker(e, id){
+  const cur=allPerfumes.find(x=>x.id===id)?.bottle||1;
+  e.stopPropagation();
+  closeBpop();
+  const pop=document.createElement('div');
+  pop.className='bpop';
+  pop.innerHTML=Array.from({length:BOTTLE_COUNT},(_,i)=>{
+    const n=i+1;
+    return `<div class="bpop-item${n===cur?' cur':''}" onclick="selectBottle('${id}',${n},this.closest('.bpop'))">
+      <img src="./bottles/perfume-${String(n).padStart(2,'0')}.png" width="36" height="48">
+      <span>${n}</span>
+    </div>`;
+  }).join('');
+  document.body.appendChild(pop);
+  _bpop=pop;
+  // position near the edit button
+  if(window.innerWidth<=620){
+    pop.style.top='50%'; pop.style.left='50%';
+    pop.style.transform='translate(-50%,-50%)';
+  } else {
+    const r=e.currentTarget.getBoundingClientRect();
+    let top=r.bottom+6, left=r.left-240;
+    if(left<8) left=8;
+    if(top+320>window.innerHeight) top=r.top-330;
+    pop.style.top=top+'px'; pop.style.left=left+'px';
+  }
+}
+
+async function selectBottle(id, n, pop){
+  const p=allPerfumes.find(x=>x.id===id); if(!p) return;
+  p.bottle=n;
+  // update card image immediately
+  const card=document.getElementById(`pc-${id}`);
+  if(card) card.querySelector('.pc-bot').innerHTML=bottleImg(n,64,86);
+  closeBpop();
+  try{
+    await fetch(`${WORKER_URL}/api/update-bottle`,{
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({perfumeId:id, bottle:n}),
+    });
+  }catch(e){ toast('儲存失敗','err'); }
+}
+
+function closeBpop(){ if(_bpop){ _bpop.remove(); _bpop=null; } }
+document.addEventListener('click', ()=>closeBpop());
+
+/* ─── Add Perfume ────────────────────────────── */
+function togglePill(el){el.classList.toggle('on');}
+
+function addCustomTone(){
+  const input=document.getElementById('addToneInput');
+  const v=input.value.trim(); if(!v) return;
+  const group=document.getElementById('addTones');
+  const exists=[...group.querySelectorAll('.check-pill')].some(el=>el.dataset.v===v);
+  if(!exists){
+    const pill=document.createElement('span');
+    pill.className='check-pill on'; pill.dataset.v=v; pill.textContent=v;
+    pill.onclick=function(){togglePill(this);};
+    group.insertBefore(pill,input);
+  }
+  input.value='';
+}
+
+function pickBottle(el){
+  document.querySelectorAll('.bpick').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  addBottleStyle=+el.dataset.si;
+  renderAddPreview();
+}
+
+function renderBottlePreviews(){
+  const picker=document.getElementById('bottlePicker');
+  picker.innerHTML=Array.from({length:BOTTLE_COUNT},(_,i)=>{
+    const n=i+1, sel=n===addBottleStyle?'on':'';
+    return `<div class="bpick ${sel}" data-si="${n}" onclick="pickBottle(this)"><img src="./bottles/perfume-${String(n).padStart(2,'0')}.png" width="52" height="70"><span>${n}</span></div>`;
+  }).join('');
+  renderAddPreview();
+}
+
+function renderAddPreview(){
+  document.getElementById('addPreview').innerHTML=bottleImg(addBottleStyle,100,136);
+}
+
+async function addPerfume(){
+  if(!WORKER_URL){toast('Worker URL 未設定','err');return;}
+  const name=document.getElementById('addEn').value.trim();
+  const nameCN=document.getElementById('addCn').value.trim();
+  if(!name&&!nameCN){toast('請至少填一個名稱','err');return;}
+  const tone=[...document.querySelectorAll('#addTones .check-pill.on')].map(el=>el.dataset.v);
+  const size=[...document.querySelectorAll('#addSizes .check-pill.on')].map(el=>el.dataset.v);
+
+  const btn=document.getElementById('addSave'); btn.disabled=true; btn.textContent='新增中…';
+  try{
+    const r=await fetch(`${WORKER_URL}/api/add-perfume`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,nameCN,tone,size,bottle:addBottleStyle}),
+    });
+    const d=await r.json();
+    if(!d.success) throw new Error(d.error||'新增失敗');
+    const newP={...d.perfume};
+    allPerfumes.push(newP);
+    allPerfumes.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    ['r','l'].forEach(m=>{renderDrop(m,1,allPerfumes);renderDrop(m,2,allPerfumes);});
+    toast(`${name||nameCN} 已新增到 Notion`,'ok');
+    document.getElementById('addEn').value='';
+    document.getElementById('addCn').value='';
+    const PRESET_TONES=new Set(['木質','果香','花香','柑橘香調']);
+    document.querySelectorAll('#addTones .check-pill').forEach(el=>{
+      if(PRESET_TONES.has(el.dataset.v)) el.classList.remove('on'); else el.remove();
+    });
+    document.querySelectorAll('#addSizes .check-pill').forEach(el=>el.classList.remove('on'));
+    addBottleStyle=1;
+    renderBottlePreviews();
+  }catch(e){toast(`失敗：${e.message}`,'err');}
+  finally{btn.disabled=false; btn.textContent='新增到 Notion';}
+}
+
+/* ─── Toast ──────────────────────────────────── */
+let _tt;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+/* ─── Service Worker ─────────────────────────── */
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+/* ─── Init ───────────────────────────────────── */
+document.getElementById('addToneInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===','){e.preventDefault();addCustomTone();}
+});
+document.getElementById('addToneInput').addEventListener('blur',()=>addCustomTone());
+
+loadPerfumes();
+</script>
+</body>
+</html>
