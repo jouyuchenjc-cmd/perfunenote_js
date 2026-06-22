@@ -299,9 +299,9 @@ textarea.df:focus{ border-color:var(--rust); }
 .cc-pname { font-size:.68rem; font-weight:600; text-align:center; line-height:1.3; word-break:break-word; }
 .cc-pcn   { font-size:.6rem; color:var(--ink-lt); text-align:center; line-height:1.3; }
 .cc-x { font-size:1.2rem; color:var(--ink-dis); flex-shrink:0; font-family:'Sulphur Point',sans-serif; }
-.cc-meta { display:flex; flex-direction:column; gap:4px; }
+.cc-top { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
 .cc-stars { font-size:.9rem; letter-spacing:1px; }
-.cc-notes { font-size:.72rem; color:var(--ink-lt); line-height:1.5; }
+.cc-notes { font-size:.72rem; color:var(--ink-lt); line-height:1.5; margin-top:10px; text-align:center; }
 .cc-date  { font-size:.62rem; color:var(--ink-dis); }
 
 /* Custom tone input */
@@ -681,6 +681,10 @@ async function saveEntry(m){
     });
     const d=await r.json();
     if(d.error) throw new Error(d.error);
+    const field=m==='l'?'avoids':'combos';
+    const p1=allPerfumes.find(x=>x.id===sel[1].id), p2=allPerfumes.find(x=>x.id===sel[2].id);
+    if(p1){ p1[field]=p1[field]||[]; if(!p1[field].includes(sel[2].id)) p1[field].push(sel[2].id); }
+    if(p2){ p2[field]=p2[field]||[]; if(!p2[field].includes(sel[1].id)) p2[field].push(sel[1].id); }
     saveLocalNote({
       type:m==='l'?'地雷':'推薦',
       p1:{id:sel[1].id,name:sel[1].name,nameCN:sel[1].nameCN},
@@ -791,12 +795,12 @@ function renderCombos(){
       const n=noteFor(a,b);
       const stars=n ? (bad?'✕':'♥').repeat(n.rating)+'<span style="opacity:.18">'+(bad?'✕':'♥').repeat(5-n.rating)+'</span>' : '';
       return `<div class="cc${bad?' bad':''}">
-        <div class="cc-pair">${pCard(a)}<div class="cc-x">×</div>${pCard(b)}</div>
-        ${n?`<div class="cc-meta">
-          ${stars?`<div class="cc-stars" style="color:${bad?'var(--rust)':'var(--warm)'}">${stars}</div>`:''}
-          ${n.notes?`<div class="cc-notes">${n.notes}</div>`:''}
-          <div class="cc-date">${new Date(n.savedAt).toLocaleDateString('zh-TW')}</div>
+        ${n?`<div class="cc-top">
+          ${stars?`<span class="cc-stars" style="color:${bad?'var(--rust)':'var(--warm)'}">${stars}</span>`:''}
+          <span class="cc-date">${new Date(n.savedAt).toLocaleDateString('zh-TW')}</span>
         </div>`:''}
+        <div class="cc-pair">${pCard(a)}<div class="cc-x">×</div>${pCard(b)}</div>
+        ${n&&n.notes?`<div class="cc-notes">${n.notes}</div>`:''}
       </div>`;
     }).join('')}</div>`;
   }
