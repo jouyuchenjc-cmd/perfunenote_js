@@ -340,6 +340,10 @@ textarea.df:focus{ border-color:var(--rust); }
   .bpop { width:calc(100vw - 24px); }
   .toast { left:12px; right:12px; bottom:14px; text-align:center; }
 }
+/* Prevent iOS auto-zoom on inputs */
+@media (max-width:620px) {
+  input, textarea, select { font-size: 16px !important; }
+}
 /* Always show edit button on touch devices */
 @media (hover:none) {
   .pc-edit { opacity:0.7; }
