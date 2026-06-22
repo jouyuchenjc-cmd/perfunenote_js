@@ -180,10 +180,6 @@ textarea.df:focus{ border-color:var(--rust); }
   font-weight:500; cursor:pointer; transition:all .13s; user-select:none;
 }
 .fp.on { border-color:var(--ink); background:var(--muted-blue); color:var(--ink); font-weight:600; }
-.fp.tone-木質.on     { background:#E8D8C5; border-color:#6A4A2A; color:#6A4A2A; }
-.fp.tone-果香.on     { background:#EDD5D0; border-color:#8A3A34; color:#8A3A34; }
-.fp.tone-花香.on     { background:#EDD6DE; border-color:#7A3A4A; color:#7A3A4A; }
-.fp.tone-柑橘香調.on { background:#EBE2C0; border-color:#6A5414; color:#6A5414; }
 
 .search-bar { position:relative; flex:1 1 200px; min-width:0; }
 .search-bar input {
@@ -230,10 +226,6 @@ textarea.df:focus{ border-color:var(--rust); }
 .bpop-item span { font-size:.58rem; color:var(--ink-lt); font-family:'Sulphur Point',sans-serif; }
 .tags  { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
 .tt { padding:2px 7px; border-radius:999px; font-size:.63rem; font-weight:500; }
-.tone-木質     { background:#E8D8C5; color:#6A4A2A; }
-.tone-果香     { background:#EDD5D0; color:#8A3A34; }
-.tone-花香     { background:#EDD6DE; color:#7A3A4A; }
-.tone-柑橘香調 { background:#EBE2C0; color:#6A5414; }
 .ts { padding:2px 6px; border-radius:4px; font-size:.62rem; background:var(--muted-blue); color:var(--ink-lt); }
 
 /* Add perfume form */
@@ -563,6 +555,34 @@ function bottleImg(n, w, h){
   return `<img src="./bottles/perfume-${num}.png" width="${w}" height="${h}">`;
 }
 
+/* ─── Tone colors (auto, works for custom tags too) ───── */
+const TONE_PALETTE = [
+  {bg:'#E8D8C5', fg:'#6A4A2A'}, // 木質
+  {bg:'#EDD5D0', fg:'#8A3A34'}, // 果香
+  {bg:'#EDD6DE', fg:'#7A3A4A'}, // 花香
+  {bg:'#EBE2C0', fg:'#6A5414'}, // 柑橘香調
+  {bg:'#E4D6C2', fg:'#7A5A30'}, // 美食調
+  {bg:'#CFE0DC', fg:'#3A6A5E'}, // 清新調
+  {bg:'#DCE5EF', fg:'#35506E'},
+  {bg:'#E5D3E8', fg:'#5A3A6A'},
+  {bg:'#D8E8D2', fg:'#3E6A30'},
+  {bg:'#F0DCC8', fg:'#7A4A20'},
+];
+const TONE_FIXED = {'木質':0,'果香':1,'花香':2,'柑橘香調':3,'美食調':4,'清新調':5};
+function toneColor(t){
+  if(t in TONE_FIXED) return TONE_PALETTE[TONE_FIXED[t]];
+  let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))&0xffffffff;
+  return TONE_PALETTE[Math.abs(h)%TONE_PALETTE.length];
+}
+function toneTag(t){
+  const c=toneColor(t);
+  return `<span class="tt" style="background:${c.bg};color:${c.fg}">${t}</span>`;
+}
+function toneFilterPill(t){
+  const c=toneColor(t);
+  return `<span class="fp" data-tone-bg="${c.bg}" data-tone-fg="${c.fg}" onclick="toggleFilter('tone','${t}',this)">${t}</span>`;
+}
+
 /* ─── Tabs ───────────────────────────────────── */
 function switchTab(t){
   ['record','landmine','combos','collection','add'].forEach(id=>{
@@ -621,7 +641,7 @@ function pick(m,s,id){
   document.getElementById(`${m}s${s}`).classList.add('hv');
   cdrop(m,s);
   document.getElementById(`${m}n${s}`).innerHTML=`<div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div>`;
-  document.getElementById(`${m}t${s}`).innerHTML=(p.tone||[]).map(t=>`<span class="tt tone-${t}">${t}</span>`).join('');
+  document.getElementById(`${m}t${s}`).innerHTML=(p.tone||[]).map(toneTag).join('');
   renderBottle(m,s);
   updSave(m);
 }
@@ -808,19 +828,26 @@ function buildFilters(){
   const sizes=[...new Set(allPerfumes.flatMap(p=>p.size||[]))]
     .sort((a,b)=>{ const ia=SIZE_ORDER.indexOf(a),ib=SIZE_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
 
-  const TONES=['木質','果香','花香','柑橘香調'];
-  document.getElementById('toneFilters').innerHTML=tones.map(t=>
-    `<span class="fp ${TONES.includes(t)?'tone-'+t:''}" onclick="toggleFilter('tone','${t}',this)">${t}</span>`
-  ).join('');
+  document.getElementById('toneFilters').innerHTML=tones.map(toneFilterPill).join('');
   document.getElementById('sizeFilters').innerHTML=sizes.map(s=>
     `<span class="fp" onclick="toggleFilter('size','${s}',this)">${s}</span>`
   ).join('');
   document.getElementById('filterBar').style.display = tones.length||sizes.length ? '' : 'none';
+  syncFilterPillStates();
+}
+
+function syncFilterPillStates(){
+  document.querySelectorAll('#toneFilters .fp').forEach(el=>{
+    const on=el.classList.contains('on');
+    if(on){ el.style.background=el.dataset.toneBg; el.style.borderColor=el.dataset.toneFg; el.style.color=el.dataset.toneFg; }
+    else  { el.style.background=''; el.style.borderColor=''; el.style.color=''; }
+  });
 }
 
 function toggleFilter(cat,val,el){
   activeFilters[cat].has(val) ? activeFilters[cat].delete(val) : activeFilters[cat].add(val);
   el.classList.toggle('on', activeFilters[cat].has(val));
+  if(cat==='tone') syncFilterPillStates();
   renderCollection();
 }
 
@@ -842,7 +869,7 @@ function renderCollection(){
   if(!items.length){el.innerHTML='<div class="state-box"><p>找不到符合的香水</p></div>';return;}
   el.innerHTML=`<div class="pg">${items.map(p=>{
     const img=bottleImg(p.bottle||1,64,86);
-    const tones=(p.tone||[]).map(t=>`<span class="tt tone-${t}">${t}</span>`).join('');
+    const tones=(p.tone||[]).map(toneTag).join('');
     const sizes=(p.size||[]).map(s=>`<span class="ts">${s}</span>`).join('');
     const editBtn=`<div class="pc-edit" onclick="openBottlePicker(event,'${p.id}')"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7.5 1.5l2 2L3 10H1V8L7.5 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></div>`;
     return `<div class="pc" id="pc-${p.id}">${editBtn}<div class="pc-bot">${img}</div><div class="pc-en">${p.name||'—'}</div><div class="pc-cn">${p.nameCN||''}</div>${(tones||sizes)?`<div class="tags">${tones}${sizes}</div>`:''}</div>`;
