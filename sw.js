@@ -1,4 +1,4 @@
-const CACHE = 'perfume-note-v3';
+const CACHE = 'perfume-note-v4';
 
 const SHELL = [
   './',
