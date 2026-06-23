@@ -269,6 +269,15 @@ textarea.df:focus{ border-color:var(--rust); }
 .spinner { width:26px; height:26px; border:2px solid var(--border-med); border-top-color:var(--ink); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 10px; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
+/* Copyright */
+.copyright {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:5px;
+  text-align:center; padding:18px 12px 22px; font-size:8.5px; line-height:1.6;
+  color:var(--ink-lt); opacity:.6; position:relative; z-index:1;
+}
+.copyright-sep { opacity:.7; }
+@media (max-width:480px) { .copyright-sep { display:none; } }
+
 /* Toast */
 .toast { position:fixed; bottom:18px; right:18px; padding:9px 16px; border-radius:7px; font-size:.82rem; font-weight:500; box-shadow:0 8px 20px rgba(77,88,111,.18); transform:translateY(60px); opacity:0; transition:all .25s; z-index:9999; pointer-events:none; }
 .toast.show { transform:translateY(0); opacity:1; }
@@ -511,6 +520,8 @@ textarea.df:focus{ border-color:var(--rust); }
         <span class="check-pill" data-v="果香"    onclick="togglePill(this)">果香</span>
         <span class="check-pill" data-v="花香"    onclick="togglePill(this)">花香</span>
         <span class="check-pill" data-v="柑橘香調" onclick="togglePill(this)">柑橘香調</span>
+        <span class="check-pill" data-v="美食調"   onclick="togglePill(this)">美食調</span>
+        <span class="check-pill" data-v="清新調"   onclick="togglePill(this)">清新調</span>
         <input id="addToneInput" class="tone-custom-input" type="text" placeholder="+ 自訂" maxlength="12">
       </div>
     </div>
@@ -531,7 +542,7 @@ textarea.df:focus{ border-color:var(--rust); }
     </div>
 
     <div class="form-row">
-      <label>插畫樣式 · Bottle Style <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-dis);font-family:'Noto Sans TC',sans-serif;font-size:.78rem">（插畫之後補，先選瓶型）</span></label>
+      <label>插畫樣式 · Bottle Style</label>
       <div class="bottle-picker" id="bottlePicker"></div>
     </div>
 
@@ -542,6 +553,11 @@ textarea.df:focus{ border-color:var(--rust); }
 </div>
 
 </div><!-- /content -->
+<div class="copyright">
+  <span>© Triple.Cell_illustration 細胞日常插畫</span>
+  <span class="copyright-sep">·</span>
+  <span>Lurn Creative Ltd. 渝澪創意有限公司</span>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -995,7 +1011,7 @@ async function addPerfume(){
     toast(`${name||nameCN} 已新增到 Notion`,'ok');
     document.getElementById('addEn').value='';
     document.getElementById('addCn').value='';
-    const PRESET_TONES=new Set(['木質','果香','花香','柑橘香調']);
+    const PRESET_TONES=new Set(['木質','果香','花香','柑橘香調','美食調','清新調']);
     document.querySelectorAll('#addTones .check-pill').forEach(el=>{
       if(PRESET_TONES.has(el.dataset.v)) el.classList.remove('on'); else el.remove();
     });
