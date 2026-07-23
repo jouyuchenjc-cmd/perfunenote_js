@@ -81,6 +81,9 @@ header {
 
 /* Combo grid */
 .combo-grid { display:grid; grid-template-columns:1fr 36px 1fr; gap:12px; align-items:start; margin-bottom:16px; }
+
+/* Combos search */
+.combos-search { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .connector  { display:flex; align-items:center; justify-content:center; padding-top:90px; font-size:1.4rem; color:var(--ink-dis); font-family:'Sulphur Point',sans-serif; user-select:none; }
 
 /* Slot */
@@ -482,6 +485,13 @@ textarea.df:focus{ border-color:var(--rust); }
 
 <!-- ══ Tab: 組合總覽 ══════════════════════════════════ -->
 <div class="tab-panel" id="panel-combos">
+  <div class="combos-search">
+    <div class="sw" style="flex:1 1 260px;max-width:320px;margin-bottom:0">
+      <input class="si" id="cs" type="text" placeholder="搜尋香水，看它的所有組合…" oninput="cflt()" onfocus="codrop()" autocomplete="off">
+      <div class="dd" id="cd"></div>
+    </div>
+    <button class="btn-sm" id="cclear" onclick="clearComboFilter()" style="display:none">清除篩選 ✕</button>
+  </div>
   <div id="combosContent"><div class="state-box"><div class="spinner"></div><p>載入中…</p></div></div>
 </div>
 
@@ -636,6 +646,7 @@ async function loadPerfumes(){
     const d=await r.json();
     allPerfumes=d.perfumes||[];
     ['r','l'].forEach(m=>{renderDrop(m,1,allPerfumes);renderDrop(m,2,allPerfumes);});
+    renderComboDrop(allPerfumes);
     buildFilters();
     renderCollection();
   }catch(e){toast(`載入失敗：${e.message}`,'err');}
@@ -654,7 +665,38 @@ function renderDrop(m,s,list){
 }
 function odrop(m,s){document.getElementById(`${m}d${s}`).classList.add('open');}
 function cdrop(m,s){document.getElementById(`${m}d${s}`).classList.remove('open');}
-document.addEventListener('click',e=>{if(!e.target.closest('.sw')){['r','l'].forEach(m=>{cdrop(m,1);cdrop(m,2);});}});
+document.addEventListener('click',e=>{if(!e.target.closest('.sw')){['r','l'].forEach(m=>{cdrop(m,1);cdrop(m,2);});ccdrop();}});
+
+/* ─── Combos filter ──────────────────────────── */
+let comboFilterId=null;
+function renderComboDrop(list){
+  document.getElementById('cd').innerHTML=list.length
+    ?list.map(p=>`<div class="ddi" onclick="pickComboFilter('${p.id}')"><div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div></div>`).join('')
+    :`<div class="dd-empty">找不到香水</div>`;
+}
+function cflt(){
+  const q=document.getElementById('cs').value.toLowerCase();
+  renderComboDrop(allPerfumes.filter(p=>p.name.toLowerCase().includes(q)||(p.nameCN||'').toLowerCase().includes(q)));
+  codrop();
+}
+function codrop(){document.getElementById('cd').classList.add('open');}
+function ccdrop(){document.getElementById('cd').classList.remove('open');}
+function pickComboFilter(id){
+  const p=allPerfumes.find(x=>x.id===id); if(!p) return;
+  comboFilterId=id;
+  document.getElementById('cs').value=p.name||p.nameCN;
+  document.getElementById('cs').classList.add('hv');
+  ccdrop();
+  document.getElementById('cclear').style.display='inline-block';
+  renderCombos();
+}
+function clearComboFilter(){
+  comboFilterId=null;
+  document.getElementById('cs').value='';
+  document.getElementById('cs').classList.remove('hv');
+  document.getElementById('cclear').style.display='none';
+  renderCombos();
+}
 
 function pick(m,s,id){
   const p=allPerfumes.find(x=>x.id===id); if(!p)return;
@@ -806,7 +848,7 @@ function renderCombos(){
   }
 
   function renderPairs(pairs, bad){
-    if(!pairs.length) return `<div class="state-box" style="padding:24px"><p>還沒有記錄</p></div>`;
+    if(!pairs.length) return `<div class="state-box" style="padding:24px"><p>${comboFilterId?'這款香水還沒有相關組合記錄':'還沒有記錄'}</p></div>`;
     return `<div class="cc-grid">${pairs.map(({a,b})=>{
       const n=noteFor(a,b);
       const stars=n ? (bad?'✕':'♥').repeat(n.rating)+'<span style="opacity:.18">'+(bad?'✕':'♥').repeat(5-n.rating)+'</span>' : '';
@@ -821,7 +863,8 @@ function renderCombos(){
     }).join('')}</div>`;
   }
 
-  const good=buildPairs('combos'), bad=buildPairs('avoids');
+  const inFilter=pr=>!comboFilterId||pr.a.id===comboFilterId||pr.b.id===comboFilterId;
+  const good=buildPairs('combos').filter(inFilter), bad=buildPairs('avoids').filter(inFilter);
   const chevron=`<svg class="combos-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   el.innerHTML=`
     <div class="combos-section">
