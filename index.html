@@ -576,6 +576,25 @@ const WORKER_URL = (()=>{
   return 'https://perfume-09.jouyu-chen-jc.workers.dev';
 })();
 
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* Worker 需要密碼（X-Passcode）；密碼只存在這台裝置的 localStorage */
+function getPass(force){
+  let p=null;
+  try{ p=localStorage.getItem('pf_pass'); }catch(_){}
+  if(!p||force){
+    p=prompt('請輸入密碼')||'';
+    try{ localStorage.setItem('pf_pass',p); }catch(_){}
+  }
+  return p;
+}
+async function api(path,opts={}){
+  const go=()=>fetch(`${WORKER_URL}${path}`,{...opts,headers:{...(opts.headers||{}),'X-Passcode':getPass()}});
+  let r=await go();
+  if(r.status===401){ getPass(true); r=await go(); }
+  return r;
+}
+
 const BOTTLE_COUNT = 16;
 const NOTES_KEY = 'pf_notes';
 
@@ -608,11 +627,11 @@ function toneColor(t){
 }
 function toneTag(t){
   const c=toneColor(t);
-  return `<span class="tt" style="background:${c.bg};color:${c.fg}">${t}</span>`;
+  return `<span class="tt" style="background:${c.bg};color:${c.fg}">${esc(t)}</span>`;
 }
 function toneFilterPill(t){
   const c=toneColor(t);
-  return `<span class="fp" data-tone-bg="${c.bg}" data-tone-fg="${c.fg}" onclick="toggleFilter('tone','${t}',this)">${t}</span>`;
+  return `<span class="fp" data-tone-bg="${c.bg}" data-tone-fg="${c.fg}" data-v="${esc(t)}" onclick="toggleFilter('tone',this.dataset.v,this)">${esc(t)}</span>`;
 }
 
 /* ─── Tabs ───────────────────────────────────── */
@@ -641,7 +660,7 @@ let addBottleStyle=1;
 async function loadPerfumes(){
   if(!WORKER_URL) return;
   try{
-    const r=await fetch(`${WORKER_URL}/api/perfumes`);
+    const r=await api('/api/perfumes');
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const d=await r.json();
     allPerfumes=d.perfumes||[];
@@ -660,7 +679,7 @@ function flt(m,s){
 }
 function renderDrop(m,s,list){
   document.getElementById(`${m}d${s}`).innerHTML=list.length
-    ?list.map(p=>`<div class="ddi" onclick="pick('${m}',${s},'${p.id}')"><div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div></div>`).join('')
+    ?list.map(p=>`<div class="ddi" onclick="pick('${m}',${s},'${p.id}')"><div class="en">${esc(p.name)||'—'}</div><div class="cn">${esc(p.nameCN)}</div></div>`).join('')
     :`<div class="dd-empty">找不到香水</div>`;
 }
 function odrop(m,s){document.getElementById(`${m}d${s}`).classList.add('open');}
@@ -671,7 +690,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.sw')){['r','l'].for
 let comboFilterId=null;
 function renderComboDrop(list){
   document.getElementById('cd').innerHTML=list.length
-    ?list.map(p=>`<div class="ddi" onclick="pickComboFilter('${p.id}')"><div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div></div>`).join('')
+    ?list.map(p=>`<div class="ddi" onclick="pickComboFilter('${p.id}')"><div class="en">${esc(p.name)||'—'}</div><div class="cn">${esc(p.nameCN)}</div></div>`).join('')
     :`<div class="dd-empty">找不到香水</div>`;
 }
 function cflt(){
@@ -704,7 +723,7 @@ function pick(m,s,id){
   document.getElementById(`${m}s${s}`).value=p.name||p.nameCN;
   document.getElementById(`${m}s${s}`).classList.add('hv');
   cdrop(m,s);
-  document.getElementById(`${m}n${s}`).innerHTML=`<div class="en">${p.name||'—'}</div><div class="cn">${p.nameCN||''}</div>`;
+  document.getElementById(`${m}n${s}`).innerHTML=`<div class="en">${esc(p.name)||'—'}</div><div class="cn">${esc(p.nameCN)}</div>`;
   document.getElementById(`${m}t${s}`).innerHTML=(p.tone||[]).map(toneTag).join('');
   renderBottle(m,s);
   updSave(m);
@@ -733,7 +752,7 @@ async function saveEntry(m){
   btn.disabled=true; btn.textContent='儲存中…';
   const prop=m==='l'?'避開組合':'揉香組合';
   try{
-    const r=await fetch(`${WORKER_URL}/api/link`,{
+    const r=await api('/api/link',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({perfume1Id:sel[1].id, perfume2Id:sel[2].id, property:prop}),
     });
@@ -842,8 +861,8 @@ function renderCombos(){
   function pCard(p){
     return `<div class="cc-p">
       ${bottleImg(p.bottle||1,46,62)}
-      <div class="cc-pname">${p.name||'—'}</div>
-      ${p.nameCN?`<div class="cc-pcn">${p.nameCN}</div>`:''}
+      <div class="cc-pname">${esc(p.name)||'—'}</div>
+      ${p.nameCN?`<div class="cc-pcn">${esc(p.nameCN)}</div>`:''}
     </div>`;
   }
 
@@ -858,7 +877,7 @@ function renderCombos(){
           <span class="cc-date">${new Date(n.savedAt).toLocaleDateString('zh-TW')}</span>
         </div>`:''}
         <div class="cc-pair">${pCard(a)}<div class="cc-x">×</div>${pCard(b)}</div>
-        ${n&&n.notes?`<div class="cc-notes">${n.notes}</div>`:''}
+        ${n&&n.notes?`<div class="cc-notes">${esc(n.notes)}</div>`:''}
       </div>`;
     }).join('')}</div>`;
   }
@@ -899,7 +918,7 @@ function buildFilters(){
 
   document.getElementById('toneFilters').innerHTML=tones.map(toneFilterPill).join('');
   document.getElementById('sizeFilters').innerHTML=sizes.map(s=>
-    `<span class="fp" onclick="toggleFilter('size','${s}',this)">${s}</span>`
+    `<span class="fp" data-v="${esc(s)}" onclick="toggleFilter('size',this.dataset.v,this)">${esc(s)}</span>`
   ).join('');
   document.getElementById('filterBar').style.display = tones.length||sizes.length ? '' : 'none';
   syncFilterPillStates();
@@ -939,9 +958,9 @@ function renderCollection(){
   el.innerHTML=`<div class="pg">${items.map(p=>{
     const img=bottleImg(p.bottle||1,64,86);
     const tones=(p.tone||[]).map(toneTag).join('');
-    const sizes=(p.size||[]).map(s=>`<span class="ts">${s}</span>`).join('');
+    const sizes=(p.size||[]).map(s=>`<span class="ts">${esc(s)}</span>`).join('');
     const editBtn=`<div class="pc-edit" onclick="openBottlePicker(event,'${p.id}')"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7.5 1.5l2 2L3 10H1V8L7.5 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></div>`;
-    return `<div class="pc" id="pc-${p.id}">${editBtn}<div class="pc-bot">${img}</div><div class="pc-en">${p.name||'—'}</div><div class="pc-cn">${p.nameCN||''}</div>${(tones||sizes)?`<div class="tags">${tones}${sizes}</div>`:''}</div>`;
+    return `<div class="pc" id="pc-${p.id}">${editBtn}<div class="pc-bot">${img}</div><div class="pc-en">${esc(p.name)||'—'}</div><div class="pc-cn">${esc(p.nameCN)}</div>${(tones||sizes)?`<div class="tags">${tones}${sizes}</div>`:''}</div>`;
   }).join('')}</div>`;
 }
 
@@ -984,7 +1003,7 @@ async function selectBottle(id, n, pop){
   if(card) card.querySelector('.pc-bot').innerHTML=bottleImg(n,64,86);
   closeBpop();
   try{
-    await fetch(`${WORKER_URL}/api/update-bottle`,{
+    await api('/api/update-bottle',{
       method:'PATCH', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({perfumeId:id, bottle:n}),
     });
@@ -1041,7 +1060,7 @@ async function addPerfume(){
 
   const btn=document.getElementById('addSave'); btn.disabled=true; btn.textContent='新增中…';
   try{
-    const r=await fetch(`${WORKER_URL}/api/add-perfume`,{
+    const r=await api('/api/add-perfume',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,nameCN,tone,size,bottle:addBottleStyle}),
     });
